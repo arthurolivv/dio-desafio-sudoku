@@ -35,7 +35,7 @@ public class Board {
 
         //verifica se o espaço da prorpiedade atual esta com um valor preenchido diferente do expected tem um erro
         return spaces.stream().flatMap(Collection::stream)
-                .anyMatch(s -> nonNull(s.getActual()) && s.getActual().equals(s.getExpected()));
+                .anyMatch(s -> nonNull(s.getActual()) && !s.getActual().equals(s.getExpected()));
 
         //se nao, o usuario esta jogando corretamente
     }
