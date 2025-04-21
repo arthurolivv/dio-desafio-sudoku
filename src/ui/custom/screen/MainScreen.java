@@ -1,18 +1,28 @@
 package ui.custom.screen;
 
+import model.Space;
 import service.BoardService;
+import service.EventEnum;
+import service.NotifierService;
 import ui.custom.button.CheckGameStatusButton;
 import ui.custom.button.FinishGameButton;
 import ui.custom.button.ResetButton;
 import ui.custom.frame.MainFrame;
+import ui.custom.input.NumberText;
 import ui.custom.panel.MainPanel;
+import ui.custom.panel.SudokuSector;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import java.awt.Dimension;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
-import static javax.swing.JOptionPane.QUESTION_MESSAGE;
-import static javax.swing.JOptionPane.YES_NO_OPTION;
+import static javax.swing.JOptionPane.*;
+import static service.EventEnum.CLEAR_SPACE;
 
 public class MainScreen {
 
@@ -20,17 +30,29 @@ public class MainScreen {
 
     private final BoardService boardService;
 
+    private final NotifierService notifierService;
+
     private JButton checkGameStatusButton;
     private JButton finishGameButton;
     private JButton resetButton;
 
     public MainScreen(final Map<String, String> gameConfig) {
         this.boardService = new BoardService(gameConfig);
+        this.notifierService = new NotifierService();
     }
 
     public void buildMainScreen() {
         JPanel mainPanel = new MainPanel(dimension);
         JFrame mainFrame = new MainFrame(dimension, mainPanel);
+        for (int row = 0; row < 9; row+=3 ){
+            var endRow = row+2;
+            for (int column = 0; column < 9; column+=3 ){
+                var endColumn = column+2;
+                var spaces = getSpacesFromSector(boardService.getSpaces(), column, endColumn, row, endRow);
+                JPanel sector = generateSection(spaces);
+                mainPanel.add(sector);
+            }
+        }
         addResetButton(mainPanel);
         addCheckGameStatusButton(mainPanel);
         addFinishButton(mainPanel);
@@ -38,16 +60,34 @@ public class MainScreen {
         mainFrame.repaint();
     }
 
+    private List<Space> getSpacesFromSector(final List<List<Space>> spaces,
+                                            final int initCol, final int endCol,
+                                            final int initRow, final int endRow){
+        List<Space> spaceSector = new ArrayList<>();
+        for (int r = initRow; r <= endRow; r++) {
+            for (int c = initCol; c <= endCol; c++) {
+                spaceSector.add(spaces.get(c).get(r));
+            }
+        }
+        return spaceSector;
+    }
+
+    private JPanel generateSection(final List<Space> spaces){
+        List<NumberText> fields = new ArrayList<>(spaces.stream().map(NumberText::new).toList());
+        fields.forEach(t -> notifierService.subscribe(CLEAR_SPACE, t));
+        return new SudokuSector(fields);
+    }
+
     private void addFinishButton(JPanel mainPanel) {
         JButton finishButton = new FinishGameButton(e -> {
             if (boardService.gameGameIsFinished()){
-                JOptionPane.showMessageDialog(null,"Parabéns, você completou o jogo!");
+                showMessageDialog(null,"Parabéns, você completou o jogo!");
                 resetButton.setEnabled(false);
                 checkGameStatusButton.setEnabled(false);
                 finishGameButton.setEnabled(false);
             }else{
                 var message = "Seu jogo contém alguma inconsisteência, ajuste e tente novamente!";
-                JOptionPane.showMessageDialog(null, message);
+                showMessageDialog(null, message);
             }
         });
         mainPanel.add(finishButton);
@@ -64,7 +104,7 @@ public class MainScreen {
                 case COMPLETE -> "Jogo completo";
             };
             message += hasErrors ? " e contém erros!" : " e não contem erros";
-            JOptionPane.showMessageDialog(null, message);
+            showMessageDialog(null, message);
         });
         mainPanel.add(checkGameStatusButton);
 
@@ -81,6 +121,7 @@ public class MainScreen {
             );
             if (dialogResult==0){
                 boardService.reset();
+                notifierService.notify(CLEAR_SPACE);
             }
         });
         mainPanel.add(resetButton);
