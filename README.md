@@ -33,15 +33,12 @@ O jogo permite ao usuário jogar, reiniciar, conferir o status do jogo e finaliz
 
 > Interface amigável com botões para ações e preenchimento do tabuleiro.
 
-![Imagem da versão gráfica do Sudoku](assets/gui-example.png)
+![Imagem da versão gráfica do Sudoku](img/graphicSudoku.png)
 
 ### 🖥️ Versão em Terminal (CLI)
 
 > Simples e direta, ideal para rodar em qualquer sistema.
 
-![Imagem da versão terminal do Sudoku](assets/terminal-example.png)
-
----
-
-## 📦 Estrutura do Projeto
+![Imagem do menu do terminal do Sudoku](img/menuTerminalSudoku.png)
+![Imagem da versão terminal do Sudoku](img/terminalSudoku.png)
 
